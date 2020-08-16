@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Horsey</title>
+        <link rel="stylesheet" type="text/css" href="style.css">
+            <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="6g6y8nkhuc3e2wt"></script>
+            <script>
+                                        var p;
+var fileCount;
+var openSaverButton;
+var localizedStrings;
+
+    function handleMessage(e) {
+        if (e.name === 'receiveStrings') {
+            localizedStrings = e.message;
+            hideInstructions();
+            safari.self.tab.dispatchMessage("sendLinkToDownload", "");
+        } else if (e.name === "insertLink") {
+            var link = e.message;
+            if (link) {
+                var button = addButtonTo('saveButton', 'button', 'openSaver()', localizedStrings.chooseLocation);
+                openSaverButton = button;
+                var filename = link.substring(link.lastIndexOf('/') + 1);
+                if (!filename) {
+                    filename = localizedStrings.defaultFileNameWithExtension;
+                }
+
+                var fun = document.getElementById('fullurl');
+                fun.value = link;
+                var input = document.getElementById('filename');
+                input.value = filename;
+
+                var urlHeading = document.getElementById('urlHeading');
+                urlHeading.appendChild(document.createTextNode(localizedStrings.url));
+
+                var saveAsFilename = document.getElementById('saveAsFilename')
+                saveAsFilename.appendChild(document.createTextNode(localizedStrings.saveAsFilename));
+            }
+        }
+    }
+
+    function cancelSave() {
+        self.close();
+    }
+
+    function onLoad() {
+        var fullurl = document.getElementById('fullurl');
+        fullurl.setAttribute('onblur', 'checkurl()');
+        fullurl.setAttribute('onfocus', "clearTagWithId('urlerrormessage')");
+
+        var filename = document.getElementById('filename');
+        filename.setAttribute('onblur', 'checkfilename()');
+        filename.setAttribute('onfocus', "clearTagWithId('errormessage')");
+
+        safari.self.addEventListener("message", handleMessage, false);
+        fileCount = 0;
+        safari.self.tab.dispatchMessage('sendStrings');
+    }
+
+    function openSaver() {
+        openSaverButton.disabled = true;
+        var link = document.getElementById('fullurl').value;
+        var filename = document.getElementById('filename').value;
+        if (!filename || filename.trim() === "" || !link || link.trim() === "") {
+            openSaverButton.disabled = false;
+            return;
+        } else {
+            var id = fileCount++;
+            var progressNode = document.createElement('table')
+            progressNode.setAttribute('id', 'transfer' + id);
+            var progress = document.getElementById('progress');
+            progress.appendChild(progressNode);
+
+            var options = {
+                files: [{
+                    'url': link,
+                    'filename': filename
+                }],
+                success: function() {
+                    showSuccess(id);
+                },
+                progress: function(progress) {
+                    updateProgressBar(progress, id, filename);
+                },
+                cancel: function() {},
+                error: function(errorMessage) {
+                    showErrorMessage(errorMessage, id, filename);
+                }
+            };
+            alert("Trying to save:"+link+" as:"+filename);
+            var options2 = {
+                files: [{
+                    'url': link,
+                    'filename': filename
+                }],
+                success: function() {
+                    alert("Yay!");
+                },
+                progress: function(progress) {
+                    
+                },
+                cancel: function() {},
+                error: function(errorMessage) {
+                    alert("There was an error"+errorMessage);
+                }
+            };
+            Dropbox.save(options2);
+        }
+
+        setTimeout(function() {
+            openSaverButton.disabled = false;
+        }, 1000);
+    }
+
+    function clearTagWithId(id) {
+        var statusMessageDiv = document.getElementById(id);
+        while (statusMessageDiv.firstChild) {
+            statusMessageDiv.removeChild(statusMessageDiv.firstChild);
+        }
+    }
+
+    function showErrorMessage(errorMessage, id, filename) {
+        var errorTd = document.getElementById('errorId' + id)
+        if (!errorTd) {
+            var errorTable = document.createElement('table');
+            var errorTr = document.createElement('tr');
+            errorTd = document.createElement('td');
+            errorTd.setAttribute('id', 'errorId' + id);
+            errorTd.setAttribute('class', 'errorId');
+
+            errorTable.appendChild(errorTr);
+            errorTr.appendChild(errorTd);
+
+            var progressNode = document.getElementById('transfer' + id);
+            progressNode.appendChild(errorTable);
+        }
+
+        var text = document.createTextNode(localizedStrings.thereWasAnError + ' ' + errorMessage);
+        errorTd.appendChild(text);
+    }
+
+    function showSuccess(id) {
+        var progressDiv = document.getElementById('percent' + id);
+        if (progressDiv) {
+            progressDiv.innerHTML = '100%' + '&#x2713;';
+        }
+        var fileDiv = document.getElementById('fileid' + id);
+        if (fileDiv) {
+            fileDiv.appendChild(document.createTextNode('\u2713'));
+        }
+    }
+
+    function updateProgressBar(progress, id, filename) {
+        var progressNode = document.getElementById('transfer' + id);
+        var sliderDiv = document.getElementById('slider' + id);
+        var progressDiv = document.getElementById('percent' + id);
+        if (!sliderDiv) {
+            var tr1 = document.createElement('tr');
+            var td0 = document.createElement('td');
+            td0.appendChild(document.createTextNode(filename));
+            td0.setAttribute('id', 'fileid' + id);
+            tr1.appendChild(td0);
+
+            var tr2 = document.createElement('tr');
+
+            var td1 = document.createElement('td');
+            td1.setAttribute('class', 'downloadStatus');
+            tr2.appendChild(td1);
+
+            sliderDiv = document.createElement('div');
+            sliderDiv.setAttribute('class', 'slider');
+            sliderDiv.setAttribute('id', 'slider' + id);
+            td1.appendChild(sliderDiv);
+
+            progressDiv = document.createElement('div');
+            progressDiv.setAttribute('class', 'percent');
+            progressDiv.setAttribute('id', 'percent' + id);
+            sliderDiv.appendChild(progressDiv);
+
+            progressNode.appendChild(tr1);
+            progressNode.appendChild(tr2);
+        }
+
+
+        progress = Math.round((progress * 100));
+        sliderDiv.style.width = progress + '%';
+        progressDiv.innerHTML = progress + '%';
+    }
+
+    function checkfilename() {
+        checkTextField('filename', 'errormessage', localizedStrings.filenameTextboxErrorMessage);
+    }
+
+    function checkurl() {
+        checkTextField('fullurl', 'urlerrormessage', localizedStrings.urlTextboxErrorMessage);
+    }
+
+    function checkTextField(textFieldId, errorFieldId, errorMessage) {
+        var input = document.getElementById(textFieldId);
+        input.value = input.value.trim();
+        var vals = input.value;
+        if (!vals || vals === "") {
+            clearTagWithId(errorFieldId);
+            var statusMessageDiv = document.getElementById(errorFieldId);
+            var errorTextNode = document.createTextNode(errorMessage);
+            statusMessageDiv.appendChild(errorTextNode);
+        } else {
+            clearTagWithId('errormessage');
+        }
+    }
+
+    function showInstructions() {
+        clearTagWithId('instructions');
+        clearTagWithId('instructionsButton');
+        var instructionsDiv = document.getElementById('instructions');
+
+        if (!p) {
+            p = document.createElement('p');
+            p.appendChild(document.createTextNode(localizedStrings.instructions));
+
+            var myStringArray = [localizedStrings.instructions1, localizedStrings.instructions2, localizedStrings.instructions3, localizedStrings.instructions4, localizedStrings.instructions5];
+            var ol = createOlWithArrayOfLiTexts(myStringArray);
+
+            p.appendChild(ol);
+            p.appendChild(document.createTextNode(localizedStrings.instructionsPara));
+
+            var br = document.createElement('br');
+            p.appendChild(br);
+            var moreInfo = document.createElement('a');
+            moreInfo.setAttribute('href', 'http://www.donkix.com/horsey');
+            moreInfo.appendChild(document.createTextNode(localizedStrings.moreInfoLinkText));
+            p.appendChild(moreInfo);
+        }
+
+        instructionsDiv.appendChild(p);
+        addButtonTo('instructionsButton', 'button', 'hideInstructions()', localizedStrings.hideInstructions);
+    }
+
+    function createOlWithArrayOfLiTexts(liTexts) {
+        var ol = document.createElement('ol');
+        for (var i = 0; i < liTexts.length; i++) {
+            createLiAndAppendToOl(liTexts[i], ol)
+        }
+
+        return ol;
+    }
+
+    function createLiAndAppendToOl(liText, ol) {
+        var li = createLiWithText(liText);
+        ol.appendChild(li);
+    }
+
+    function createLiWithText(text) {
+        var li = document.createElement('li');
+        li.appendChild(document.createTextNode(text));
+        return li;
+    }
+
+    function hideInstructions() {
+        clearTagWithId('instructions');
+        clearTagWithId('instructionsButton');
+        addButtonTo('instructionsButton', 'button', 'showInstructions()', localizedStrings.showInstructions);
+    }
+
+    function addButtonTo(containerId, buttonType, onclickFunction, displayText) {
+        var container = document.getElementById(containerId);
+        var button = createButton(buttonType, onclickFunction, displayText);
+        container.appendChild(button);
+        return button;
+    }
+
+    function createButton(type, onclick, displayText) {
+        var button = document.createElement('button');
+        button.setAttribute("type", type);
+        button.setAttribute("onclick", onclick);
+        var textNode = document.createTextNode(displayText);
+        button.appendChild(textNode);
+        return button;
+    }
+
+window.addEventListener('load', onLoad, false);
+                </script>
+            </head>
+        <body>
+        <div class="center">
+            <div id="instructions"></div>
+            <table>
+                <tr><td id="instructionsButton" class="rightd"></td></tr>
+            </table>
+            <table>
+                <tr><th id='urlHeading'></th></tr>
+                <tr><td class="leftd"><div class="cc"><div id="urlerrormessage"></div><input id="fullurl" type="text" name="fullurl"/></div></td></tr>
+            </table>
+            <table>
+                <tr><th id='saveAsFilename'></th></tr>
+                <tr><td class="leftd"><div class="cc"><div id="errormessage"></div><input id="filename" type="text" name="filename"/></div></td></tr>
+            </table>
+            <table>
+                <tr><td id="saveButton" class="rightd"></td></tr>
+            </table>
+            <table id="progress"></table>
+        </div>
+    </body>
+</html>

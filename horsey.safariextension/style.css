@@ -1,0 +1,95 @@
+div.center
+{
+width: 520px;
+margin-left: auto;
+margin-right: auto;
+}
+
+body,input,button
+{
+font-family: "Open Sans","lucida grande","Segoe UI",arial,verdana,"lucida sans unicode",tahoma,sans-serif;
+font-size: 13px;
+font-weight: normal;
+}
+
+div.cc
+{
+width:90%;
+margin-left: auto;
+margin-right: auto;
+}
+
+#errormessage
+{
+background-color: #ffB2B2;
+position:absolute;
+z-index:1;
+text-align:center;
+}
+
+#urlerrormessage
+{
+background-color: #ffB2B2;
+position:absolute;
+z-index:1;
+text-align:center;
+}
+
+td.errorId
+{
+background-color: #ffB2B2;
+}
+
+body
+{
+background-color: #fff;
+min-height: 100%;
+}
+
+table
+{
+table-layout:fixed;
+width:100%;
+}
+
+table,td,th
+{
+overflow:auto;
+border-collapse:collapse;
+text-align:center;
+}
+
+input[type=text]
+{
+font-family: arial, sans-serif;
+background-color: transparent;
+position:relative;
+z-index:2;
+width:100%;
+}
+
+#progress
+{
+    width:100%;
+}
+
+td.downloadStatus
+{
+overflow:hidden;
+}
+
+.slider
+{
+    width:37%;
+    height:15px;
+    background: #B8D5F5;
+}
+.percent 
+{
+    color: #000000;
+    font-size: 15px;
+    font-style: italic;
+    font-weight: bold;
+    position: absolute;
+    left: 48%;
+}

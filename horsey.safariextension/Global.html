@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <script>
+            var horseysNameSpace = (function()
+            {
+                var link;
+                var imgSrc;
+                var cmd;
+                var localizedStrings;
+                
+                return {
+                    onLoad:function()
+                    {
+                        localizedStrings = new Object();
+                        horseysNameSpace.loadLocalizedStrings();
+                        safari.application.addEventListener("contextmenu",horseysNameSpace.handleContextMenu,false);
+                        safari.application.addEventListener('command', horseysNameSpace.handleCommand, false);
+                        safari.application.addEventListener("message",horseysNameSpace.respondToMessage,false);
+                        safari.extension.settings.addEventListener("change", horseysNameSpace.handleLanguageChange, false);
+                    },
+                    
+                    handleLanguageChange:function(event)
+                    {
+                        console.log("Settings change for setting:"+event.key);
+                        if(event.key='language')
+                        {
+                            horseysNameSpace.loadLocalizedStrings();
+                        }
+                    },
+                    
+                    loadLocalizedStrings:function ()
+                    {
+                        var language = safari.extension.settings.language;
+                        var enStrings = ['URL','Save as filename','Show instructions','Hide instructions','Instructions','You must specify a url.','You must specify a file name.','There was an error when transferring your file:','defaultname.html','Choose Location','Verify that the url is the one you intend to download to Dropbox.','Enter the file name, or else the default name will be used.','Click on "Choose Location".','When the "Dropbox Saver" window opens, log into your Dropbox account (if necessary), and choose the location where you want to save the file.','Click "Save" in the Dropbox window',"Dropbox will download your file to your account online.  This window will show the status of your download as Dropbox attempts the transfer. If there are any errors (if you run of space etc.) they will show up here. Under normal circumstances your transfer should be successful and there is no need to keep this window open, unless you wish to monitor the status of your transfer. ",'More information','Copy image to Dropbox','Copy linked file to Dropbox'];
+                        if(language==='jp')
+                        {
+                            var jpStrings = ['URL','ファイル名として保存する','インストラクションを表示する','インストラクションを非表示にする','インストラクション','URLを指定する必要があります。','ファイル名を指定する必要があります。','ファイルの転送中にエラーが発生しました:','defaultname.html','ロケーションの選択','URLがDropboxへダウンロードしようとしているものであることを確認する。','ファイル名を入力、そうでない場合はその他の既定の名前が使われます。','ロケーションの選択"をクリック。".','"Dropbox Saver"ウィンドウが開いた時に、Dropboxアカウントにログインして（必要な場合は）、ファイルの保存先のロケーションを選択します。','Dropboxウィンドウの"保存"をクリック',"Dropboxがファイルをオンラインアカウントにダウンロードします。このウィンドウはDropboxが転送しているダウンロード状態を表示します。何かエラー（空きが無い場合など）があった場合はここにそれらが表示されます。通常転送は無事終わるので、転送状況をモニターしたい場合で無い限り、このウィンドウを開き続ける必要はありません",'詳細情報','画像をDropboxへコピー','リンクしたファイルをDropboxへコピー'];
+                                    
+                                this.setKeyValuesForStrings(jpStrings);
+                        }
+                        else
+                        {
+                            //Default language is English
+                            this.setKeyValuesForStrings(enStrings);
+                        }
+                    },
+                    
+                    setKeyValuesForStrings:function (arrayOfStrings)
+                    {
+                        if(arrayOfStrings.length === 19)
+                        {
+                            localizedStrings.url = arrayOfStrings[0];
+                            localizedStrings.saveAsFilename= arrayOfStrings[1];
+                            localizedStrings.showInstructions = arrayOfStrings[2];
+                            localizedStrings.hideInstructions = arrayOfStrings[3];
+                            localizedStrings.instructions = arrayOfStrings[4];
+                            localizedStrings.urlTextboxErrorMessage = arrayOfStrings[5];
+                            localizedStrings.filenameTextboxErrorMessage = arrayOfStrings[6];
+                            localizedStrings.thereWasAnError = arrayOfStrings[7];
+                            localizedStrings.defaultFileNameWithExtension = arrayOfStrings[8];
+                            localizedStrings.chooseLocation = arrayOfStrings[9];
+                            localizedStrings.instructions1 = arrayOfStrings[10];
+                            localizedStrings.instructions2 = arrayOfStrings[11];
+                            localizedStrings.instructions3 = arrayOfStrings[12];
+                            localizedStrings.instructions4 = arrayOfStrings[13];
+                            localizedStrings.instructions5 = arrayOfStrings[14];
+                            localizedStrings.instructionsPara = arrayOfStrings[15];
+                            localizedStrings.moreInfoLinkText = arrayOfStrings[16];
+                            localizedStrings.saveImageToDropboxCtxMenuItem = arrayOfStrings[17];
+                            localizedStrings.saveLinkedFileToDropboxCtxMenuItem = arrayOfStrings[18];
+                            
+                        }
+                        else
+                        {
+                            console.log("Size of dictionary:"+arrayOfStrings.length);
+                            console.log("The translations data for the current language is missing information. The extension will not work as expected");
+                        }
+                    },
+                    
+                    handleContextMenu:function (event)
+                    {
+                        if(event.userInfo)
+                        {
+                            var info = event.userInfo;
+                            if(info.imageSrc)
+                            {
+                                imgSrc = info.imageSrc;
+                                event.contextMenu.appendContextMenuItem("saveImageToDropbox", localizedStrings.saveImageToDropboxCtxMenuItem);
+                            }
+                            
+                            if(info.href)
+                            {
+                                link = info.href;
+                                event.contextMenu.appendContextMenuItem("saveLinkedFileToDropbox", localizedStrings.saveLinkedFileToDropboxCtxMenuItem);
+                            }
+                        }
+                    },
+                    
+                    respondToMessage:function (e)
+                    {
+                        if(e.name==='sendStrings')
+                        {
+                            e.target.page.dispatchMessage('receiveStrings',localizedStrings);
+                        }
+                        else if(e.name ==='sendLinkToDownload')
+                        {
+                            if(cmd==='saveLinkedFileToDropbox')
+                            {
+                                e.target.page.dispatchMessage('insertLink',link);
+                            }
+                            else if(cmd==='saveImageToDropbox')
+                            {
+                                e.target.page.dispatchMessage('insertLink',imgSrc);
+                            }
+                        }
+                    },
+                    
+                    handleCommand:function (event)
+                    {
+                        if(event.command === 'saveLinkedFileToDropbox')
+                        {
+                            cmd= 'saveLinkedFileToDropbox';
+                            if (link)
+                            {
+	                            var encLink = encodeURIComponent(link);
+                                var tab = safari.application.activeBrowserWindow.openTab('foreground',0);
+                                tab.url = "http://www.donkix.com/hry.html?url="+ encLink;
+                            }
+                        }
+                        else if(event.command==='saveImageToDropbox')
+                        {
+                            cmd = 'saveImageToDropbox';
+                            if (imgSrc)
+                            {
+	                            var encImgSrc = encodeURIComponent(imgSrc)
+                                var tab = safari.application.activeBrowserWindow.openTab('foreground',0);
+                                tab.url = "http://www.donkix.com/hry.html?url="+ encImgSrc;
+                            }
+                        }
+                    }
+                };
+            })();
+        
+        window.addEventListener('load',horseysNameSpace.onLoad,false);
+        
+        </script>
+    </head>
+    <body>
+    </body>
+</html>
+
