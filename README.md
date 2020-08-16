@@ -7,7 +7,7 @@ This extension allows you to save almost any file on the web to your Dropbox acc
 
 ## Why is this useful ?
 
-- By copying a file directly from a website to your Dropbox account, without having to download it to you computer first, you're doing two things:
+By copying a file directly from a website to your Dropbox account, without having to download it to you computer first, you're doing two things:
 
 First:
 You're saving %50 of your Bandwidth, since the file is copied directly to your Dropbox account online. And from your Dropbox account to your computer.
