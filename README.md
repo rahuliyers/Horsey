@@ -25,7 +25,7 @@ Then it occurred to me that Dropbox probably had servers in the US which could d
 
 It worked great!! Without using this extension, trying to download the files in question would take over two days before timing out. With the extension the download would get copied into my Dropbox account and onto my computer in a fraction of the time.
 
-The best part was, unlike browser downloads, which require you to keep your computer awake and connected to the internet until the download completed, this method didnt require you to remain online once you initiated the download. The download would happen directly between the website hosting the file, and Dropbox, so you could close your computer / disconnect / do whatever you like wihout bothering about the download completing. Once Dropbox had copied the file, it would quietly copy it into your Dropbox folder on your devices in the background.
+The best part was, unlike browser downloads, which require you to keep your computer awake and connected to the internet until the download completed, this method didnt require you to remain online once you initiated the download. The download would happen directly between the website hosting the file, and Dropbox, so you could close your computer / disconnect / do whatever you like without bothering about the download completing. Once Dropbox had copied the file, it would quietly copy it into your Dropbox folder on your devices in the background.
 
 ## How do you use it ?
 
@@ -41,4 +41,4 @@ It is no longer maintained. Apple closed the Safari Extension Gallery when mergi
 
 ## Is there some way to get the same functionality again ?
 
-You should check the latest version of the Dropbox API to see if they support this kind of behaviour (I used the Saver api), or see if there are any other extensions for your favorite browser which allow you to accomplist the same behavior.
+You should check the latest version of the Dropbox API to see if they support this kind of behaviour (I used the Saver api), or see if there are any other extensions for your favorite browser which allow you to accomplish the same behavior.
